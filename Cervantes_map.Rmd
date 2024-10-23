@@ -57,150 +57,80 @@ if(!require("leaftime")){
 
 #Je charge les données de travail: les noms de lieux issus des pièces de Lope de Vega, divisés par pièces et par genre ("comedia" et "drama")
 ```{r}
-setwd("/Users/miguelbetti/Desktop/Git/Cervantes_map")
+setwd("C:/Users/betti/Desktop/Cervantes_map/Cervantes_map")
 ```
-
 
 ```{r, results='hide'}
 Parte_I  <- read.csv("data/Places/Parte_I.csv")
-Parte_I$Longitude <- as.numeric(Parte_I$Longitude)
-Parte_I$Latitude <- as.numeric(Parte_I$Latitude)
-Parte_I$Occurrences <- as.numeric(Parte_I$Occurrences)
+Parte_I$lng <- as.numeric(Parte_I$lng)
+Parte_I$lat <- as.numeric(Parte_I$lat)
 ```
 
 ```{r, results='hide'}
 Parte_II  <- read.csv("data/Places/Parte_II.csv")
-Parte_II$Longitude <- as.numeric(Parte_II$Longitude)
-Parte_II$Latitude <- as.numeric(Parte_II$Latitude)
-Parte_II$Occurrences <- as.numeric(Parte_II$Occurrences)
+Parte_II$lng <- as.numeric(Parte_II$lng)
+Parte_II$lat <- as.numeric(Parte_II$lat)
 ```
 
 #Je prépare la carte
 ```{r}
-#J'ajoute un fond de carte et je définis son point central
-map <- leaflet(df) %>%
-  addProviderTiles(providers$Esri.NatGeoWorldMap)%>% 
-  setView(lng = -40, lat = 40, zoom =2.4)   %>%
-  
-  #J'ajoute les points issus des pièces, importées précédemment, et je leur attribue la couleur, la   taille et l'opacité
-  addCircleMarkers(lng = Parte_I$Longitude, 
-                   lat = Parte_I$Latitude,
-                   group = "Parte I",
-                   color = "blue",
-                   weight=1,
-                   radius = ~sqrt(Parte_I$Occurrences) * 4,
-                   fillOpacity = 0.5,
-                   label = ~paste(Parte_I$Place,
-                                  Parte_I$Occurrences)) %>%
-  
-  addCircleMarkers(lng = Parte_II$Longitude, 
-                   lat = Parte_II$Latitude,
-                   group = "Parte II",
-                   color = "red",
-                   weight=1,
-                   radius = ~sqrt(Parte_II$Occurrences) * 4,
-                   fillOpacity = 0.5,
-                   label = ~paste(Parte_II$Place,
-                                  Parte_II$Occurrences)) %>%
-
-  #J'ajoute une fonction reset, qui permet de reactiver setView()
-  addResetMapButton() %>%
-  
-  #J'ajoute un panneau de contrôle pour pouvoir selectionner les différentes options, des légendes,   et je définis leur position
-  addLayersControl(baseGroups = c("Obras"),
-                   
-                   overlayGroups = c("Parte I", "Parte II"),
-                   options = layersControlOptions(collapsed = TRUE)) %>%
-  
-                   
-                    addLegend("bottomleft", 
-              
-              colors = c("transparent"),
-
-              labels=c("Mapa y extracción de datos: Miguel Betti - miguel.betti@unige.ch"),
-             
-              title="El mapa del Quijote: toponimia") %>%
-  
-
-addLegend(position = "bottomleft", 
-              labels = c("Parte I",
-                         "Parte II"), 
-              
-                
-              colors = c("blue",
-                         "red"),
-              
-              title = "Obras:")
-  
-map
-```
-
-```{r}
-Parte_I  <- read.csv("data/Places/Parte_I.csv")
-Parte_I$Longitude <- as.numeric(Parte_I$Longitude)
-Parte_I$Latitude <- as.numeric(Parte_I$Latitude)
-Parte_I$Occurrences <- as.numeric(Parte_I$Occurrences)
-
-Parte_II  <- read.csv("data/Places/Parte_II.csv")
-Parte_II$Longitude <- as.numeric(Parte_II$Longitude)
-Parte_II$Latitude <- as.numeric(Parte_II$Latitude)
-Parte_II$Occurrences <- as.numeric(Parte_II$Occurrences)
-
-# Préparation de la carte
+#Je prépare la carte
 map <- leaflet() %>%
   addProviderTiles(providers$Esri.NatGeoWorldMap) %>% 
   setView(lng = -40, lat = 40, zoom = 2.4) %>%
   
-  # Ajout des marqueurs pour Parte I
-  addCircleMarkers(lng = Parte_I$Longitude, 
-                   lat = Parte_I$Latitude,
-                   group = "Parte I",
+  #J'ajoute les points issus des pièces
+  addCircleMarkers(lng = Parte_I$lng, 
+                   lat = Parte_I$lat,
+                   group = "Primera parte",
                    color = "blue",
                    weight = 1,
-                   radius = ~sqrt(Parte_I$Occurrences) * 4,
+                   radius = ~sqrt(Parte_I$menciones) * 4,
                    fillOpacity = 0.5,
-                   label = ~paste(Parte_I$Place, Parte_I$Occurrences)) %>%
+                   label = ~paste(Parte_I$lugar, Parte_I$menciones)) %>%
   
-  # Ajout des marqueurs pour Parte II
-  addCircleMarkers(lng = Parte_II$Longitude, 
-                   lat = Parte_II$Latitude,
-                   group = "Parte II",
+  addCircleMarkers(lng = Parte_II$lng, 
+                   lat = Parte_II$lat,
+                   group = "Segunda parte",
                    color = "red",
                    weight = 1,
-                   radius = ~sqrt(Parte_II$Occurrences) * 4,
+                   radius = ~sqrt(Parte_II$menciones) * 4,
                    fillOpacity = 0.5,
-                   label = ~paste(Parte_II$Place, Parte_II$Occurrences)) %>%
-
-  # Bouton de réinitialisation
+                   label = ~paste(Parte_II$lugar, Parte_II$menciones)) %>%
+  
+  #J'ajoute une fonction reset
   addResetMapButton() %>%
   
-  # Contrôle des couches
-  addLayersControl(baseGroups = c("Obras"),
-                   overlayGroups = c("Parte I", "Parte II"),
+  #J'ajoute un panneau de contrôle
+  addLayersControl(baseGroups = c("El Quijote"),
+                   overlayGroups = c("Primera parte", "Segunda parte"),
                    options = layersControlOptions(collapsed = TRUE)) %>%
   
-  # Première légende (correction "transparent")
   addLegend("bottomleft", 
             colors = c("transparent"),
             labels = c("Mapa y extracción de datos: Miguel Betti - miguel.betti@unige.ch"),
-            title = "El mapa del Quijote: toponimia") %>%
-  
-  # Deuxième légende
-  addLegend(position = "bottomleft", 
-            labels = c("Parte I", "Parte II"), 
-            colors = c("blue", "red"),
-            title = "Obras:")
+            title = "El mapa del Quijote:")
 
+# Affiche la carte
 map
 ```
-
-
-#Je sauvegarde ma carte en format html
 ```{r}
-saveWidget(map, file="Lope_genre.html")
-browseURL("Lope_genre.html")
+map <- leaflet() %>%
+  addProviderTiles(providers$Esri.NatGeoWorldMap) %>% 
+  setView(lng = 7.188, lat = 21.094, zoom = 5) %>%  # Ajustez le point central et le niveau de zoom selon vos données
+  
+  addCircleMarkers(lng = Parte_I$lng, 
+                   lat = Parte_I$lat,
+                   group = "Primera parte",
+                   color = "blue",
+                   weight = 1,
+                   radius = ~sqrt(Parte_I$menciones) * 4,
+                   fillOpacity = 0.5,
+                   label = ~paste(Parte_I$lugar, Parte_I$menciones))
+
+# Affichez la carte
+map
+
+
+
 ```
-
-
-
-

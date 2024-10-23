@@ -1,0 +1,61 @@
+---
+title: "Cervantes map"
+author: "Miguel Betti"
+date: "22/10/2024"
+output: html_document
+---
+
+````{r}
+# Load necessary libraries
+library(leaflet)
+
+install.packages("dplyr")
+library(dplyr)
+
+install.packages("shiny")
+library(shiny)
+
+# Read the CSV files
+parte_I <- read.csv("data/Places/Parte_I.csv", stringsAsFactors = FALSE)
+parte_II <- read.csv("data/Places/Parte_II.csv", stringsAsFactors = FALSE)
+
+# Create the leaflet map
+
+
+map <- leaflet(data = combined_data) %>%
+  addProviderTiles(providers$Esri.NatGeoWorldMap)%>% # Set initial view
+  setView(lng = -40, lat = 40, zoom =2.4)   %>% # Set initial view
+  
+
+ addCircles(lng = parte_I$lng, # Circles geoposition, size, color, label, etc. 
+             lat = parte_I$lat,
+             group = "Primera parte",
+             radius = ~sqrt(parte_I$menciones) * 5000,
+             color = "blue",
+             weight=1,
+             fill = TRUE, 
+             fillColor = "blue", 
+             fillOpacity = 0.5,
+             popup = ~paste0("Lugar: ", parte_I$lugar, "<br>",
+                             "Menciones: ", parte_I$menciones)) %>%   # Pop-up with details
+  
+addCircles(lng = parte_II$lng, 
+             lat = parte_II$lat,
+             group = "Segunda parte",
+             radius = ~sqrt(parte_II$menciones) * 5000,
+             color = "red",
+             weight=1,
+             fill = TRUE, 
+             fillColor = "red", 
+             fillOpacity = 0.5,
+             popup = ~paste0("Lugar: ", parte_II$lugar, "<br>",
+                             "Menciones: ", parte_II$menciones)) %>% # Pop-up with details
+
+  
+  # Add reset map button
+  addResetMapButton()
+   
+
+# Print the map
+map
+````
