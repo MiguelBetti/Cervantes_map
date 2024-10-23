@@ -1,0 +1,206 @@
+---
+title: "Cervantes map"
+author: "Miguel Betti"
+date: "22/10/2024"
+output: html_document
+---
+
+#J'installe les librairies et les packages nécessaires: knitr, leaflet, etc.
+
+```{r, setup, fig.show=hold, fig.margin=TRUE}
+if(!require("knitr")){
+  install.packages("knitr")
+  library(knitr)
+}
+knitr::opts_chunk$set(echo = TRUE, fig.width=20)
+```
+
+```{r, warning=FALSE, results='hide'}
+if(!require("leaflet")){
+  install.packages("leaflet")
+  library(leaflet)
+}
+if(!require("sp")){
+  install.packages("sp")
+  library(sp)
+}
+if(!require("RColorBrewer")){
+  install.packages("RColorBrewer")
+  library(RColorBrewer)
+}
+if(!require("htmlwidgets")){
+  install.packages("htmlwidgets")
+  library(htmlwidgets)
+}
+if(!require("htmltools")){
+  install.packages("htmltools")
+  library(htmltools)
+}
+if(!require("leaflet.extras")){
+  install.packages("leaflet.extras")
+  library(leaflet.extras)
+}
+if(!require("geojsonio")){
+  install.packages("geojsonio")
+  library(geojsonio)
+}
+if(!require("rjson")){
+  install.packages("rjson")
+  library(rjson)
+}
+if(!require("leaftime")){
+  install.packages("leaftime")
+  library(leaftime)
+}
+
+```
+
+#Je charge les données de travail: les noms de lieux issus des pièces de Lope de Vega, divisés par pièces et par genre ("comedia" et "drama")
+```{r}
+setwd("/Users/miguelbetti/Desktop/Git/Cervantes_map")
+```
+
+
+```{r, results='hide'}
+Parte_I  <- read.csv("data/Places/Parte_I.csv")
+Parte_I$Longitude <- as.numeric(Parte_I$Longitude)
+Parte_I$Latitude <- as.numeric(Parte_I$Latitude)
+Parte_I$Occurrences <- as.numeric(Parte_I$Occurrences)
+```
+
+```{r, results='hide'}
+Parte_II  <- read.csv("data/Places/Parte_II.csv")
+Parte_II$Longitude <- as.numeric(Parte_II$Longitude)
+Parte_II$Latitude <- as.numeric(Parte_II$Latitude)
+Parte_II$Occurrences <- as.numeric(Parte_II$Occurrences)
+```
+
+#Je prépare la carte
+```{r}
+#J'ajoute un fond de carte et je définis son point central
+map <- leaflet(df) %>%
+  addProviderTiles(providers$Esri.NatGeoWorldMap)%>% 
+  setView(lng = -40, lat = 40, zoom =2.4)   %>%
+  
+  #J'ajoute les points issus des pièces, importées précédemment, et je leur attribue la couleur, la   taille et l'opacité
+  addCircleMarkers(lng = Parte_I$Longitude, 
+                   lat = Parte_I$Latitude,
+                   group = "Parte I",
+                   color = "blue",
+                   weight=1,
+                   radius = ~sqrt(Parte_I$Occurrences) * 4,
+                   fillOpacity = 0.5,
+                   label = ~paste(Parte_I$Place,
+                                  Parte_I$Occurrences)) %>%
+  
+  addCircleMarkers(lng = Parte_II$Longitude, 
+                   lat = Parte_II$Latitude,
+                   group = "Parte II",
+                   color = "red",
+                   weight=1,
+                   radius = ~sqrt(Parte_II$Occurrences) * 4,
+                   fillOpacity = 0.5,
+                   label = ~paste(Parte_II$Place,
+                                  Parte_II$Occurrences)) %>%
+
+  #J'ajoute une fonction reset, qui permet de reactiver setView()
+  addResetMapButton() %>%
+  
+  #J'ajoute un panneau de contrôle pour pouvoir selectionner les différentes options, des légendes,   et je définis leur position
+  addLayersControl(baseGroups = c("Obras"),
+                   
+                   overlayGroups = c("Parte I", "Parte II"),
+                   options = layersControlOptions(collapsed = TRUE)) %>%
+  
+                   
+                    addLegend("bottomleft", 
+              
+              colors = c("transparent"),
+
+              labels=c("Mapa y extracción de datos: Miguel Betti - miguel.betti@unige.ch"),
+             
+              title="El mapa del Quijote: toponimia") %>%
+  
+
+addLegend(position = "bottomleft", 
+              labels = c("Parte I",
+                         "Parte II"), 
+              
+                
+              colors = c("blue",
+                         "red"),
+              
+              title = "Obras:")
+  
+map
+```
+
+```{r}
+Parte_I  <- read.csv("data/Places/Parte_I.csv")
+Parte_I$Longitude <- as.numeric(Parte_I$Longitude)
+Parte_I$Latitude <- as.numeric(Parte_I$Latitude)
+Parte_I$Occurrences <- as.numeric(Parte_I$Occurrences)
+
+Parte_II  <- read.csv("data/Places/Parte_II.csv")
+Parte_II$Longitude <- as.numeric(Parte_II$Longitude)
+Parte_II$Latitude <- as.numeric(Parte_II$Latitude)
+Parte_II$Occurrences <- as.numeric(Parte_II$Occurrences)
+
+# Préparation de la carte
+map <- leaflet() %>%
+  addProviderTiles(providers$Esri.NatGeoWorldMap) %>% 
+  setView(lng = -40, lat = 40, zoom = 2.4) %>%
+  
+  # Ajout des marqueurs pour Parte I
+  addCircleMarkers(lng = Parte_I$Longitude, 
+                   lat = Parte_I$Latitude,
+                   group = "Parte I",
+                   color = "blue",
+                   weight = 1,
+                   radius = ~sqrt(Parte_I$Occurrences) * 4,
+                   fillOpacity = 0.5,
+                   label = ~paste(Parte_I$Place, Parte_I$Occurrences)) %>%
+  
+  # Ajout des marqueurs pour Parte II
+  addCircleMarkers(lng = Parte_II$Longitude, 
+                   lat = Parte_II$Latitude,
+                   group = "Parte II",
+                   color = "red",
+                   weight = 1,
+                   radius = ~sqrt(Parte_II$Occurrences) * 4,
+                   fillOpacity = 0.5,
+                   label = ~paste(Parte_II$Place, Parte_II$Occurrences)) %>%
+
+  # Bouton de réinitialisation
+  addResetMapButton() %>%
+  
+  # Contrôle des couches
+  addLayersControl(baseGroups = c("Obras"),
+                   overlayGroups = c("Parte I", "Parte II"),
+                   options = layersControlOptions(collapsed = TRUE)) %>%
+  
+  # Première légende (correction "transparent")
+  addLegend("bottomleft", 
+            colors = c("transparent"),
+            labels = c("Mapa y extracción de datos: Miguel Betti - miguel.betti@unige.ch"),
+            title = "El mapa del Quijote: toponimia") %>%
+  
+  # Deuxième légende
+  addLegend(position = "bottomleft", 
+            labels = c("Parte I", "Parte II"), 
+            colors = c("blue", "red"),
+            title = "Obras:")
+
+map
+```
+
+
+#Je sauvegarde ma carte en format html
+```{r}
+saveWidget(map, file="Lope_genre.html")
+browseURL("Lope_genre.html")
+```
+
+
+
+
