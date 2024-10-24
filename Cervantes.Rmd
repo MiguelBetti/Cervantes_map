@@ -7,17 +7,28 @@ output: html_document
 
 ````{r}
 # Load necessary libraries
+install.packages("leaflet")
 library(leaflet)
+library(leaflet.extras)
 
 install.packages("dplyr")
 library(dplyr)
 
-install.packages("shiny")
-library(shiny)
+install.packages
+library(htmlwidgets)
+
+
 
 # Read the CSV files
 parte_I <- read.csv("data/Places/Parte_I.csv", stringsAsFactors = FALSE)
 parte_II <- read.csv("data/Places/Parte_II.csv", stringsAsFactors = FALSE)
+
+# Combine the data for the heatmap
+combined_data <- rbind(
+  data.frame(lat = parte_I$lat, lng = parte_I$lng, weight = parte_I$menciones),
+  data.frame(lat = parte_II$lat, lng = parte_II$lng, weight = parte_II$menciones)
+)
+
 
 # Create the leaflet map
 
@@ -29,10 +40,10 @@ map <- leaflet(data = combined_data) %>%
 
  addCircles(lng = parte_I$lng, # Circles geoposition, size, color, label, etc. 
              lat = parte_I$lat,
-             group = "Primera parte",
-             radius = ~sqrt(parte_I$menciones) * 5000,
+             group = "Primera parte (1605)",
+             radius = ~sqrt(parte_I$menciones) * 10,
              color = "blue",
-             weight=1,
+             weight=5,
              fill = TRUE, 
              fillColor = "blue", 
              fillOpacity = 0.5,
@@ -41,21 +52,54 @@ map <- leaflet(data = combined_data) %>%
   
 addCircles(lng = parte_II$lng, 
              lat = parte_II$lat,
-             group = "Segunda parte",
-             radius = ~sqrt(parte_II$menciones) * 5000,
+             group = "Segunda parte (1615)",
+             radius = ~sqrt(parte_II$menciones) * 10,
              color = "red",
-             weight=1,
+             weight=5,
              fill = TRUE, 
              fillColor = "red", 
              fillOpacity = 0.5,
              popup = ~paste0("Lugar: ", parte_II$lugar, "<br>",
                              "Menciones: ", parte_II$menciones)) %>% # Pop-up with details
 
+  addHeatmap(data = combined_data, 
+              lng = ~lng, 
+              lat = ~lat, 
+              intensity = ~weight, 
+              blur = 20, 
+              max = 0.05, 
+              radius = 50, 
+              gradient = colorNumeric(palette = c("yellow", "orange", "red"), domain = NULL),
+              group = "Mapa de calor") %>%
   
-  # Add reset map button
-  addResetMapButton()
+  addLayersControl(baseGroups = c("Partes"),
+                   
+                   overlayGroups = c("Primera parte (1605)", "Segunda parte (1615)", "Mapa de calor"),
+                   options = layersControlOptions(collapsed = TRUE)) %>%
+  
+  
+  # Add a custom legend for the heatmap
+  addLegend("bottomright", 
+            colors = c("yellow", "orange", "red"), 
+            labels = c("<10 menciones", "<20 menciones", ">20 menciones"),
+            title = "Mapa de calor de los topónimos",
+            opacity = 1) %>%
+  
+                   
+                    addLegend("bottomleft", 
+              
+              colors = c("transparent"),
+
+              labels=c("Mapa y extracción de datos: Miguel Betti - miguel.betti@unige.ch"),
+             
+              title="El mapa del Quijote:")
    
 
 # Print the map
 map
 ````
+
+```{r}
+saveWidget(map, file="Cervantes_map.html")
+browseURL("Cervantes_map.html")
+```
