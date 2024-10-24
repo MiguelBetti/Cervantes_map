@@ -7,16 +7,19 @@ output: html_document
 
 ````{r}
 # Load necessary libraries
+
+if(!require("leaflet"))
 install.packages("leaflet")
 library(leaflet)
 library(leaflet.extras)
 
+if(!require("dplyr"))
 install.packages("dplyr")
 library(dplyr)
 
+if(!require("htmlwidgets"))
 install.packages
 library(htmlwidgets)
-
 
 
 # Read the CSV files
@@ -30,11 +33,17 @@ combined_data <- rbind(
 )
 
 
+# Define threshold values based on your data
+thresholds <- c(0, 10, 20, max(combined_data$weight, na.rm = TRUE))
+labels <- c("< 10 menciones", "10 - 20 menciones", "> 20 menciones")
+colors <- c("green", "yellow", "red")
+
+
 # Create the leaflet map
 
 
 map <- leaflet(data = combined_data) %>%
-  addProviderTiles(providers$Esri.NatGeoWorldMap)%>% # Set initial view
+  addProviderTiles(providers$Esri.WorldImagery)%>% # Set map provider
   setView(lng = -40, lat = 40, zoom =2.4)   %>% # Set initial view
   
 
@@ -69,10 +78,11 @@ addCircles(lng = parte_II$lng,
               blur = 20, 
               max = 0.05, 
               radius = 50, 
-              gradient = colorNumeric(palette = c("yellow", "orange", "red"), domain = NULL),
-              group = "Mapa de calor") %>%
+              gradient = colorNumeric(palette = colors, domain = NULL), 
+              group = "Mapa de calor") %>% 
   
-  addLayersControl(baseGroups = c("Partes"),
+  
+  addLayersControl(baseGroups = c("Don Quijote de la Mancha"),
                    
                    overlayGroups = c("Primera parte (1605)", "Segunda parte (1615)", "Mapa de calor"),
                    options = layersControlOptions(collapsed = TRUE)) %>%
@@ -80,10 +90,10 @@ addCircles(lng = parte_II$lng,
   
   # Add a custom legend for the heatmap
   addLegend("bottomright", 
-            colors = c("yellow", "orange", "red"), 
-            labels = c("<10 menciones", "<20 menciones", ">20 menciones"),
-            title = "Mapa de calor de los topónimos",
-            opacity = 1) %>%
+            colors = colors, 
+            labels = labels, 
+            title = "Mapa de calor de los topónimos", 
+            opacity = 1) %>% 
   
                    
                     addLegend("bottomleft", 
